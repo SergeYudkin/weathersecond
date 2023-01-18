@@ -1,19 +1,19 @@
-package com.example.weathersecond.model
+package com.gb.kotlin_1728_2_1.model
 
 import android.os.Parcelable
+import com.gb.kotlin_1728_2_1.room.App
 import kotlinx.android.parcel.Parcelize
 
+@Parcelize
+data class Weather(var city:City= getDefaultCity(), val temperature:Int=20, val feelsLike:Int=20,val icon:String="skc_n"):Parcelable
 
 @Parcelize
-data class Weather(val city:City = getDefaultCity(), val temperature:Int = 20, val feelsLike:Int = 20): Parcelable
+data class City(val name:String,val lat:Double,val lon:Double):Parcelable
 
-@Parcelize
-data class City(val name:String, val lat:Double, val lon:Double): Parcelable
-
-fun getDefaultCity() = City("Волгоград",48.67,44.44)
-
+fun getDefaultCity() = City("Москва",37.5,55.5)
 
 fun getWorldCities(): List<Weather> {
+    val listWeather = App.getHistoryWeatherDao().getAllHistoryWeather()
     return listOf(
         Weather(City("Лондон", 51.5085300, -0.1257400), 1, 2),
         Weather(City("Токио", 35.6895000, 139.6917100), 3, 4),
