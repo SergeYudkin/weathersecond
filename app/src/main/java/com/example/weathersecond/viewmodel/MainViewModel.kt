@@ -7,12 +7,15 @@ import androidx.lifecycle.ViewModel
 import com.example.weathersecond.model.RepositoryImpl
 
 class MainViewModel(private val liveData: MutableLiveData<AppState> = MutableLiveData(),
-                    private val repositoryImpl: RepositoryImpl = RepositoryImpl()
+
 ): ViewModel() {
 
-    fun getLiveData(): LiveData<AppState>{
-       return liveData
+    private val repositoryImpl: RepositoryImpl by lazy {
+        RepositoryImpl()
     }
+
+    fun getLiveData() = liveData
+
 
     fun getWeatherFromLocalSourceRus()  = getWeatherFromLocalServer(true)
 
@@ -25,24 +28,19 @@ class MainViewModel(private val liveData: MutableLiveData<AppState> = MutableLiv
 
         liveData.postValue(AppState.Loading(0))
         Thread{
-            sleep(1000)
-
+            sleep(200)
             val rand = (1..40).random()
-            if (true){
                 liveData.postValue(
                     AppState.Success(
-                        if (isRussian) {
-                            repositoryImpl.getWeatherFromLocalStorageRus()
-                        } else {
-                            repositoryImpl.getWeatherFromLocalStorageWorld()
+                        with(repositoryImpl){
+                            if (isRussian) {
+                                getWeatherFromLocalStorageRus()
+                            } else {
+                                getWeatherFromLocalStorageWorld()
+                            }
                         }
                     )
                 )
-            }
-            else{
-                //liveData.postValue(AppState.Error(IllegalStateException("666")))
-            }
-
         }.start()
     }
 

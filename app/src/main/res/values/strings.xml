@@ -7,4 +7,7 @@
     <string name="error">Error</string>
     <string name="reload">Reload</string>
     <string name="default_city">Волгоград</string>
+    <string name="success">Успех</string>
+    <string name="again">Попробовать ещё раз.</string>
+
 </resources>

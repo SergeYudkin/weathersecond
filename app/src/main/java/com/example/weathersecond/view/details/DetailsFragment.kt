@@ -30,18 +30,23 @@ class DetailsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val weather = arguments?.getParcelable<Weather>(BUNDLE_KEY)
-        if (weather != null){
-            setWeatherData(weather)
+        arguments?.let {
+            it.getParcelable<Weather>(BUNDLE_KEY)?.run {
+                setWeatherData(this)
+            }
         }
 
     }
 
     private fun setWeatherData(weather: Weather) {
-        binding.cityName.text = weather.city.name
-        binding.cityCoordinates.text = "${weather.city.lat} ${weather.city.lon}"
-        binding.feelsLikeValue.text = "${weather.feelsLike}"
-        binding.temperatureValue.text = "${weather.temperature}"
+
+        with(binding){
+            cityName.text = weather.city.name
+            cityCoordinates.text = "${weather.city.lat} ${weather.city.lon}"
+            feelsLikeValue.text = "${weather.feelsLike}"
+            temperatureValue.text = "${weather.temperature}"
+        }
+
     }
 
 
@@ -53,19 +58,24 @@ class DetailsFragment : Fragment() {
         return binding.root
     }
 
-    companion object{
-        fun newInstance(bundle: Bundle): DetailsFragment{
-           val fragment = DetailsFragment()
-            fragment.arguments = bundle
-            return fragment
-        }
-    }
 
+
+
+    companion object{
+        fun newInstance(bundle: Bundle) =
+            DetailsFragment().apply {
+                arguments = bundle
+            }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
     }
 
-
 }
+
+
+
+
+

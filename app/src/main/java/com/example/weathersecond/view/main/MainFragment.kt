@@ -25,21 +25,32 @@ class MainFragment : Fragment(), OnMyItemClickListener {
         return _binding!!
     }
 
-    private val adapter = MainFragmentAdapter(this)
+    private val adapter : MainFragmentAdapter by lazy {
+        MainFragmentAdapter(this)
+    }
     private var isRussian = true
 
-    private lateinit var viewModel: MainViewModel
+    private  val viewModel: MainViewModel by lazy {
+        ViewModelProvider(this).get(MainViewModel::class.java)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        //viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        initView()
         viewModel.getLiveData().observe(viewLifecycleOwner, Observer<AppState> { renderData(it) })
 
-        binding.mainFragmentRecyclerView.adapter = adapter
-        binding.mainFragmentFAB.setOnClickListener {
-            sentRequest()
-        }
+
         viewModel.getWeatherFromLocalSourceRus()
+    }
+
+    private fun initView() {
+        with(binding){
+            mainFragmentRecyclerView.adapter = adapter
+            mainFragmentFAB.setOnClickListener {
+                sentRequest()
+             }
+        }
     }
 
     private fun sentRequest() {
@@ -54,24 +65,36 @@ class MainFragment : Fragment(), OnMyItemClickListener {
     }
 
     private fun renderData(appState: AppState){
-        when(appState){
+        with(binding){
+            when(appState){
+                is AppState.Error ->{
+                    mainFragmentLoadingLayout.visibility = View.GONE
+                    root.actionError(getString(R.string.error),Snackbar.LENGTH_LONG)
+                }
+                is AppState.Loading ->{
+                    mainFragmentLoadingLayout.visibility = View.VISIBLE
+                }
+                is AppState.Success ->{
+                    mainFragmentLoadingLayout.visibility = View.GONE
+                    adapter.setWeather(appState.weatherData)
+                    root.showSnackBarWithoutAction(getString(R.string.success),Snackbar.LENGTH_LONG)
 
-            is AppState.Error ->{
-                binding.mainFragmentLoadingLayout.visibility = View.GONE
-                Snackbar.make(binding.root,"Error",Snackbar.LENGTH_LONG).setAction("Попробовать ещё раз"){
-                    sentRequest()
-                }.show()
-            }
-            is AppState.Loading ->{
-                binding.mainFragmentLoadingLayout.visibility = View.VISIBLE
-            }
-            is AppState.Success ->{
-                binding.mainFragmentLoadingLayout.visibility = View.GONE
-                adapter.setWeather(appState.weatherData)
-
+                }
             }
         }
 
+    }
+
+    private fun View.actionError(text:String,length:Int){
+        Snackbar.make(this,text ,length )
+            .setAction(getString(R.string.again)) {
+                sentRequest()
+            }.show()
+    }
+
+
+    private fun View.showSnackBarWithoutAction(text:String,length:Int){
+        Snackbar.make(this,text,length).show()
     }
 
     override fun onCreateView(
