@@ -10,6 +10,8 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.weathersecond.databinding.FragmentDetailsBinding
 import com.example.weathersecond.databinding.FragmentMainBinding
 import com.example.weathersecond.model.Weather
+import com.example.weathersecond.model.WeatherDTO
+import com.example.weathersecond.utils.WeatherLoader
 import com.example.weathersecond.view.main.MainFragmentAdapter
 import com.example.weathersecond.viewmodel.AppState
 import com.example.weathersecond.viewmodel.MainViewModel
@@ -18,7 +20,7 @@ import com.google.android.material.snackbar.Snackbar
 
 const val BUNDLE_KEY = "key"
 
-class DetailsFragment : Fragment() {
+class DetailsFragment : Fragment(),WeatherLoader.OnWeatherLoaded {
 
      private var _binding: FragmentDetailsBinding? = null
     private val binding: FragmentDetailsBinding
@@ -26,25 +28,33 @@ class DetailsFragment : Fragment() {
         return _binding!!
     }
 
+    private val weatherLoader = WeatherLoader(this)
+    lateinit var localWeather: Weather
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         arguments?.let {
-            it.getParcelable<Weather>(BUNDLE_KEY)?.run {
-                setWeatherData(this)
+            it.getParcelable<Weather>(BUNDLE_KEY)?.let {
+                localWeather = it
+
+                weatherLoader.loadWeather(it.city.lat, it.city.lon)
             }
         }
 
     }
 
-    private fun setWeatherData(weather: Weather) {
+    private fun setWeatherData(weatherDTO: WeatherDTO) {
 
         with(binding){
-            cityName.text = weather.city.name
-            cityCoordinates.text = "${weather.city.lat} ${weather.city.lon}"
-            feelsLikeValue.text = "${weather.feelsLike}"
-            temperatureValue.text = "${weather.temperature}"
+            with(localWeather){
+                cityName.text = city.name
+                cityCoordinates.text = "${city.lat} ${city.lon}"
+                feelsLikeValue.text = "${weatherDTO.fact.feelsLike}"
+                temperatureValue.text = "${weatherDTO.fact.temp}"
+            }
+
         }
 
     }
@@ -71,6 +81,16 @@ class DetailsFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    override fun onLoaded(weatherDTO: WeatherDTO?) {
+        weatherDTO?.let {
+            setWeatherData(weatherDTO)
+        }
+    }
+
+    override fun onFailed() {
+        TODO("Not yet implemented")
     }
 
 }
